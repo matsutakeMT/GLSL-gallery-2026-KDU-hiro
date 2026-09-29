@@ -6,6 +6,6 @@
   "tags": ["kayou", "plasma"],
   "created": "2026-09-29",
   "buffers": {
-    "image": "image.glsl"
+    "image": "kayou_image.glsl"
   }
 }
