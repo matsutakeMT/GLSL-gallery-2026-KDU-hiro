@@ -1,0 +1,11 @@
+{
+  "id": "kayou-01",
+  "title": "kayou",
+  "author": "yoshiki",
+  "description": "火をイメージしたシェーダー作品",
+  "tags": ["kayou", "plasma"],
+  "created": "2026-09-29",
+  "buffers": {
+    "image": "image.glsl"
+  }
+}

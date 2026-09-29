@@ -1,0 +1,150 @@
+// Ember Flow Depth (0.8x)
+// Shadertoy Image shader
+// Mouse drag: parallax / light / wind
+
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+
+float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
+}
+
+float noise(vec2 p) {
+    vec2 i = floor(p), f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x),
+               mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+}
+
+float fbm(vec2 p) {
+    float v = 0.0, a = 0.5;
+    mat2 m = rot(0.5);
+    for (int i = 0; i < 5; i++) {
+        v += a * noise(p);
+        p = m * p * 2.03 + vec2(1.7, 9.2);
+        a *= 0.5;
+    }
+    return v;
+}
+
+vec3 palette(float t) {
+    vec3 c = vec3(0.015, 0.0, 0.05);
+    c = mix(c, vec3(0.42, 0.02, 0.20), smoothstep(0.00, 0.35, t));
+    c = mix(c, vec3(1.00, 0.22, 0.05), smoothstep(0.30, 0.65, t));
+    c = mix(c, vec3(1.00, 0.72, 0.22), smoothstep(0.60, 0.90, t));
+    c = mix(c, vec3(1.00, 0.96, 0.88), smoothstep(0.88, 1.05, t));
+    return c;
+}
+
+vec2 field(vec2 uv, float t, float seed) {
+    vec2 p = uv * 2.2 + vec2(seed, seed * 0.37);
+    p.y -= t * 1.2;
+
+    vec2 q = vec2(fbm(p + vec2(0.0, -t)),
+                  fbm(p + vec2(5.2, 1.3) + t * 0.4));
+    vec2 r = vec2(fbm(p + 4.0 * q + vec2(1.7, 9.2) + t * 0.6),
+                  fbm(p + 4.0 * q + vec2(8.3, 2.8) - t * 0.5));
+    float f = fbm(p + 4.0 * r);
+
+    float h = uv.y + 0.5;
+    float heat = f * 1.5 + r.x * 0.25 - h * 0.85 + 0.35;
+    heat -= pow(abs(uv.x) * 1.15, 2.0) * 1.3;
+    return vec2(heat, f);
+}
+
+const float SCALE = 0.8;
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    vec2 uv0 = (fragCoord - 0.5 * iResolution.xy) / iResolution.y;
+    vec2 uv = vec2(uv0.x, uv0.y + 0.5) / SCALE - vec2(0.0, 0.5);
+    float t = iTime * 0.3;
+
+    vec2 m = iMouse.z > 0.0
+        ? (iMouse.xy / iResolution.xy - 0.5)
+        : vec2(0.0);
+
+    uv.x += m.x * 0.3 * (uv.y + 0.5);
+
+    vec2 bp = uv * 1.3 + vec2(0.0, -t * 0.5);
+    float smoke = fbm(bp * 1.5 + fbm(bp + t * 0.3) * 2.0);
+    float glowBase = exp(-3.0 * length(vec2(uv.x * 0.8, uv.y + 0.55)));
+
+    vec3 col = vec3(0.012, 0.0, 0.04);
+    col += vec3(0.30, 0.04, 0.10) * smoke * glowBase * 1.2;
+    col += vec3(0.08, 0.02, 0.16) * smoke * (0.5 - uv.y) * 0.25;
+
+    // Back layer
+    {
+        vec2 buv = uv * 0.68 + vec2(m.x * -0.05, -0.04);
+        float hb = clamp(field(buv, t * 0.7, 11.3).x, 0.0, 1.2);
+        vec3 emit = palette(hb * 0.78) * vec3(0.75, 0.30, 0.55) * 0.75;
+        float a = smoothstep(0.0, 0.55, hb) * 0.85;
+        col = mix(col, emit, a) + emit * a * 0.25;
+    }
+
+    col += vec3(0.22, 0.05, 0.10)
+        * smoothstep(0.35, 0.8, smoke)
+        * glowBase * 0.35;
+
+    // Middle layer
+    {
+        vec2 muv = uv * 0.84 + vec2(m.x * -0.02, -0.015);
+        float hm = clamp(field(muv, t * 0.85, 4.7).x, 0.0, 1.2);
+        vec3 emit = palette(hm * 0.92) * vec3(1.0, 0.72, 0.62) * 0.85;
+        float a = smoothstep(0.0, 0.45, hm) * 0.8;
+        col = mix(col, emit, a) + emit * a * 0.2;
+    }
+
+    // Front layer
+    {
+        float e = 0.004;
+        vec2 c0 = field(uv, t, 0.0);
+        float hx = field(uv + vec2(e, 0.0), t, 0.0).x;
+        float hy = field(uv + vec2(0.0, e), t, 0.0).x;
+
+        float heat = clamp(c0.x, 0.0, 1.2);
+        float f = c0.y;
+
+        vec2 grad = vec2(hx - c0.x, hy - c0.x) / e;
+        vec3 n = normalize(vec3(-grad * 0.22, 1.0));
+
+        vec3 L = normalize(vec3(-0.45 + m.x, 0.55 + m.y, 0.75));
+        vec3 V = vec3(0.0, 0.0, 1.0);
+        vec3 H = normalize(L + V);
+
+        float diff = max(dot(n, L), 0.0);
+        float spec = pow(max(dot(n, H), 0.0), 48.0);
+        float rim  = pow(1.0 - max(dot(n, V), 0.0), 2.5);
+
+        float mask = smoothstep(0.05, 0.55, heat);
+        float core = smoothstep(0.55, 1.05, heat);
+
+        vec3 flame = palette(heat) * (0.50 + 0.85 * diff);
+        flame *= 1.0 + 0.6 * core;
+        flame += vec3(1.00, 0.85, 0.60) * spec * mask * 1.3;
+        flame += vec3(1.00, 0.30, 0.08) * rim * mask * 0.6;
+        flame *= mix(0.65, 1.0, smoothstep(0.2, 0.9, n.z));
+
+        float cl = abs(fract(f * 7.0 - iTime * 0.12) - 0.5);
+        float ribbon = 1.0 - smoothstep(0.0, 0.03, cl);
+        flame += vec3(1.0, 0.6, 0.3)
+            * ribbon
+            * (0.25 + 0.5 * diff)
+            * smoothstep(0.15, 0.7, heat);
+
+        float a = smoothstep(0.0, 0.32, heat) * mix(0.62, 1.0, core);
+        col = mix(col, flame, a);
+
+        col += vec3(0.9, 0.2, 0.05)
+            * pow(smoothstep(0.05, 0.8, heat), 3.0)
+            * 0.28;
+    }
+
+    col = 1.0 - exp(-col * 1.4);
+    col = pow(col, vec3(0.4545));
+    col *= 1.0 - 0.6 * dot(uv0 * 0.9, uv0 * 0.9);
+    col += (hash(fragCoord + fract(iTime)) - 0.5) * 0.025;
+
+    fragColor = vec4(col, 1.0);
+}
