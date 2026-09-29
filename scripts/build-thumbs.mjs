@@ -58,8 +58,16 @@ async function main() {
 
   // Headless Chromium has no GPU, so WebGL needs to be forced onto SwiftShader's
   // software rasterizer; without these flags the canvas silently renders black.
+  // --no-sandbox / --disable-dev-shm-usage are needed for Chrome to launch at
+  // all inside GitHub Actions' containerized runners.
   const browser = await puppeteer.launch({
-    args: ["--enable-unsafe-swiftshader", "--use-gl=angle", "--use-angle=swiftshader"],
+    args: [
+      "--enable-unsafe-swiftshader",
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+    ],
   });
   try {
     const page = await browser.newPage();
