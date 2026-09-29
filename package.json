@@ -1,0 +1,13 @@
+{
+  "name": "glsl-gallery-2026-kdu-hiro",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:list": "node scripts/build-list.mjs",
+    "build:thumbs": "node scripts/build-thumbs.mjs",
+    "build": "npm run build:list && npm run build:thumbs"
+  },
+  "devDependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}
