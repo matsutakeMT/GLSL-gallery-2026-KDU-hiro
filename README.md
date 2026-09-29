@@ -44,7 +44,21 @@ scripts/
 }
 ```
 
-3. `image.glsl` に Shadertoy 形式のフラグメントシェーダーを書く(`mainImage(out vec4 fragColor, in vec2 fragCoord)` を実装)。利用可能な uniform は `iResolution` / `iTime` / `iMouse`。
+3. `image.glsl` に Shadertoy 形式のフラグメントシェーダーを書く。**shadertoy.com と同じ流儀で、`mainImage(out vec4 fragColor, in vec2 fragCoord)` の実装だけを書けばよい**(`precision` 宣言・uniform 宣言・`main()` はエンジン側が自動で付与するので書かない)。利用可能な uniform:
+
+   | uniform | 型 | 内容 |
+   |---|---|---|
+   | `iResolution` | `vec3` | キャンバス解像度 (px) |
+   | `iTime` | `float` | 経過時間 (秒) |
+   | `iTimeDelta` | `float` | 直前フレームからの経過時間 (秒) |
+   | `iFrame` | `int` | フレーム番号 (0始まり) |
+   | `iFrameRate` | `float` | 推定フレームレート (fps) |
+   | `iMouse` | `vec4` | `xy`=マウス座標, `z`=押下中なら1 |
+   | `iDate` | `vec4` | `xyzw`=年, 月(1-12), 日, 経過秒(その日の00:00から) |
+   | `iChannel0`〜`iChannel3` | `sampler2D` | テクスチャチャンネル(未設定時は1x1のダミー) |
+   | `iChannelResolution` | `vec3[4]` | 各チャンネルの解像度 |
+
+   参考実装: [`docs/shaders/sample-01/image.glsl`](docs/shaders/sample-01/image.glsl)
 
 ## ローカルでの確認
 

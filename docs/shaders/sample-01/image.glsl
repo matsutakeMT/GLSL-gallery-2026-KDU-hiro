@@ -1,11 +1,7 @@
-// Shadertoy-style fragment shader.
-// Uniforms provided by the engine: iResolution, iTime, iMouse
-precision highp float;
-
-uniform vec3 iResolution;
-uniform float iTime;
-uniform vec4 iMouse;
-
+// Shadertoy-style fragment shader — only mainImage() is required.
+// The engine supplies precision, uniforms and main() automatically, matching
+// shadertoy.com: iResolution, iTime, iTimeDelta, iFrame, iFrameRate, iMouse,
+// iDate, iChannel0-3, iChannelResolution.
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec2 uv = fragCoord / iResolution.xy;
     vec2 p = uv * 2.0 - 1.0;
@@ -19,10 +15,4 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
     vec3 col = 0.5 + 0.5 * cos(6.2831 * (v * 0.15 + vec3(0.0, 0.33, 0.67)));
     fragColor = vec4(col, 1.0);
-}
-
-void main() {
-    vec4 color;
-    mainImage(color, gl_FragCoord.xy);
-    gl_FragColor = color;
 }

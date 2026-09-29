@@ -1,4 +1,7 @@
-// Minimal Shadertoy-like fullscreen-quad GLSL renderer.
+// Minimal Shadertoy-compatible fullscreen-quad GLSL renderer.
+// Shader source files only need to define mainImage(out vec4 fragColor, in vec2 fragCoord) —
+// precision, uniforms, and main() are supplied automatically, exactly like on shadertoy.com.
+//
 // Usage:
 //   import { createRenderer } from "./engine/engine.js";
 //   const renderer = createRenderer(canvas, fragmentShaderSource);
@@ -16,8 +19,27 @@ const HEADER = `
 precision highp float;
 uniform vec3 iResolution;
 uniform float iTime;
+uniform float iTimeDelta;
+uniform float iFrameRate;
+uniform int iFrame;
 uniform vec4 iMouse;
+uniform vec4 iDate;
+uniform sampler2D iChannel0;
+uniform sampler2D iChannel1;
+uniform sampler2D iChannel2;
+uniform sampler2D iChannel3;
+uniform vec3 iChannelResolution[4];
 `;
+
+const FOOTER = `
+void main() {
+  vec4 color;
+  mainImage(color, gl_FragCoord.xy);
+  gl_FragColor = color;
+}
+`;
+
+const CHANNEL_COUNT = 4;
 
 function compileShader(gl, type, source) {
   const shader = gl.createShader(type);
@@ -46,12 +68,23 @@ function createProgram(gl, vertexSource, fragmentSource) {
   return program;
 }
 
+// A 1x1 placeholder so iChannelN can be sampled safely even when no texture is bound to it.
+function createPlaceholderTexture(gl) {
+  const texture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  return texture;
+}
+
 export function createRenderer(canvas, fragmentSource, options = {}) {
   const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
   if (!gl) throw new Error("WebGL is not supported in this browser.");
 
-  const needsHeader = !fragmentSource.includes("iResolution");
-  const source = needsHeader ? HEADER + fragmentSource : fragmentSource;
+  const source = HEADER + fragmentSource + FOOTER;
   const program = createProgram(gl, VERTEX_SHADER, source);
 
   const positionBuffer = gl.createBuffer();
@@ -63,9 +96,24 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
   );
 
   const positionLocation = gl.getAttribLocation(program, "a_position");
-  const iResolutionLocation = gl.getUniformLocation(program, "iResolution");
-  const iTimeLocation = gl.getUniformLocation(program, "iTime");
-  const iMouseLocation = gl.getUniformLocation(program, "iMouse");
+  const uniforms = {
+    iResolution: gl.getUniformLocation(program, "iResolution"),
+    iTime: gl.getUniformLocation(program, "iTime"),
+    iTimeDelta: gl.getUniformLocation(program, "iTimeDelta"),
+    iFrameRate: gl.getUniformLocation(program, "iFrameRate"),
+    iFrame: gl.getUniformLocation(program, "iFrame"),
+    iMouse: gl.getUniformLocation(program, "iMouse"),
+    iDate: gl.getUniformLocation(program, "iDate"),
+    iChannelResolution: gl.getUniformLocation(program, "iChannelResolution"),
+    iChannels: [0, 1, 2, 3].map((i) => gl.getUniformLocation(program, `iChannel${i}`)),
+  };
+
+  // channels[i] = { texture, width, height }; defaults to a 1x1 placeholder.
+  const channels = Array.from({ length: CHANNEL_COUNT }, () => ({
+    texture: createPlaceholderTexture(gl),
+    width: 1,
+    height: 1,
+  }));
 
   const mouse = { x: 0, y: 0, down: false };
   const onMouseMove = (e) => {
@@ -81,6 +129,8 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
 
   let rafId = null;
   let startTime = performance.now();
+  let lastFrameMs = null;
+  let frame = 0;
   const fixedTime = options.fixedTime; // if set, render a single static frame at this time (for thumbnails)
 
   function resize() {
@@ -94,7 +144,19 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
     gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
-  function renderFrame(timeSeconds) {
+  function bindChannels() {
+    for (let i = 0; i < CHANNEL_COUNT; i++) {
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, channels[i].texture);
+      if (uniforms.iChannels[i]) gl.uniform1i(uniforms.iChannels[i], i);
+    }
+    if (uniforms.iChannelResolution) {
+      const res = channels.flatMap((c) => [c.width, c.height, 1]);
+      gl.uniform3fv(uniforms.iChannelResolution, new Float32Array(res));
+    }
+  }
+
+  function renderFrame(timeSeconds, deltaSeconds) {
     resize();
     gl.useProgram(program);
 
@@ -102,16 +164,27 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-    gl.uniform3f(iResolutionLocation, canvas.width, canvas.height, 1.0);
-    gl.uniform1f(iTimeLocation, timeSeconds);
-    gl.uniform4f(iMouseLocation, mouse.x, mouse.y, mouse.down ? 1 : 0, 0);
+    const now = new Date();
+    const secondsOfDay = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds() + now.getMilliseconds() / 1000;
+
+    gl.uniform3f(uniforms.iResolution, canvas.width, canvas.height, 1.0);
+    gl.uniform1f(uniforms.iTime, timeSeconds);
+    gl.uniform1f(uniforms.iTimeDelta, deltaSeconds);
+    gl.uniform1f(uniforms.iFrameRate, deltaSeconds > 0 ? 1 / deltaSeconds : 0);
+    gl.uniform1i(uniforms.iFrame, frame);
+    gl.uniform4f(uniforms.iMouse, mouse.x, mouse.y, mouse.down ? 1 : 0, 0);
+    gl.uniform4f(uniforms.iDate, now.getFullYear(), now.getMonth() + 1, now.getDate(), secondsOfDay);
+    bindChannels();
 
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    frame++;
   }
 
-  function loop() {
-    const t = fixedTime !== undefined ? fixedTime : (performance.now() - startTime) / 1000;
-    renderFrame(t);
+  function loop(nowMs) {
+    const t = fixedTime !== undefined ? fixedTime : (nowMs - startTime) / 1000;
+    const delta = lastFrameMs === null ? 0 : (nowMs - lastFrameMs) / 1000;
+    lastFrameMs = nowMs;
+    renderFrame(t, delta);
     if (fixedTime === undefined) {
       rafId = requestAnimationFrame(loop);
     }
@@ -120,7 +193,9 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
   return {
     start() {
       startTime = performance.now();
-      loop();
+      lastFrameMs = null;
+      frame = 0;
+      loop(startTime);
     },
     stop() {
       if (rafId !== null) {
@@ -129,7 +204,21 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
       }
     },
     renderOnce(timeSeconds = 0) {
-      renderFrame(timeSeconds);
+      renderFrame(timeSeconds, 0);
+    },
+    // src: HTMLImageElement | HTMLCanvasElement | ImageBitmap
+    setChannelTexture(index, src) {
+      const channel = channels[index];
+      if (!channel) return;
+      gl.bindTexture(gl.TEXTURE_2D, channel.texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      channel.width = src.width || src.videoWidth || 1;
+      channel.height = src.height || src.videoHeight || 1;
     },
     dispose() {
       this.stop();
@@ -138,6 +227,7 @@ export function createRenderer(canvas, fragmentSource, options = {}) {
       canvas.removeEventListener("mouseup", onMouseUp);
       gl.deleteProgram(program);
       gl.deleteBuffer(positionBuffer);
+      channels.forEach((c) => gl.deleteTexture(c.texture));
     },
     gl,
   };
