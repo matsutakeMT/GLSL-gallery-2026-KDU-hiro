@@ -1,9 +1,9 @@
 {
-  "id": "suiyou",
-  "title": "(未実装)",
-  "author": "",
-  "description": "image.glsl が未追加です。",
-  "tags": ["suiyou"],
+  "id": "2210990081",
+  "title": "03_wednesday",
+  "author": "2210990081",
+  "description": "水曜日担当なので水をモチーフにしたアニメーションにしました。",
+  "tags": ["water"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"
