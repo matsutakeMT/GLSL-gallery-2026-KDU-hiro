@@ -1,9 +1,9 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "id": "mokuyou",
+  "title": "TGIF! Warm Golden Rain",
+  "author": "",
+  "description": "金貨や指輪が降り注ぐ、暖色の光に満ちたシェーダー作品。",
+  "tags": ["mokuyou", "gold"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"

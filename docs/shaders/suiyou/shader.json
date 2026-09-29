@@ -1,9 +1,9 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "id": "suiyou",
+  "title": "(未実装)",
+  "author": "",
+  "description": "image.glsl が未追加です。",
+  "tags": ["suiyou"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"

@@ -1,9 +1,9 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "id": "kinnyou",
+  "title": "森の朝",
+  "author": "",
+  "description": "巨木と針葉樹が茂る森のシェーダー作品。",
+  "tags": ["kinnyou", "forest"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"

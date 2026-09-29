@@ -1,11 +1,11 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "id": "getuyou",
+  "title": "月夜の森",
+  "author": "",
+  "description": "月と星、雲が流れる夜空のシェーダー作品。",
+  "tags": ["getuyou", "night", "moon"],
   "created": "2026-09-29",
   "buffers": {
-    "image": "image.glsl"
+    "image": "getuyou.glsl"
   }
 }
