@@ -1,14 +1,14 @@
-// site/shaders/list.json の各シェーダーを headless Chromium で開き、
-// site/assets/thumbs/<id>.png を生成する (.gitignore 対象)。
+// docs/shaders/list.json の各シェーダーを headless Chromium で開き、
+// docs/assets/thumbs/<id>.png を生成する (.gitignore 対象)。
 import { readFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer from "puppeteer";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const siteDir = path.join(__dirname, "..", "site");
-const listPath = path.join(siteDir, "shaders", "list.json");
-const thumbsDir = path.join(siteDir, "assets", "thumbs");
+const docsDir = path.join(__dirname, "..", "docs");
+const listPath = path.join(docsDir, "shaders", "list.json");
+const thumbsDir = path.join(docsDir, "assets", "thumbs");
 
 const THUMB_WIDTH = 480;
 const THUMB_HEIGHT = 270;
@@ -29,7 +29,7 @@ async function main() {
     await page.setViewport({ width: THUMB_WIDTH, height: THUMB_HEIGHT });
 
     for (const shader of list) {
-      const url = `file://${path.join(siteDir, "view.html")}?id=${encodeURIComponent(shader.id)}`;
+      const url = `file://${path.join(docsDir, "view.html")}?id=${encodeURIComponent(shader.id)}`;
       await page.goto(url, { waitUntil: "networkidle0" });
       await new Promise((r) => setTimeout(r, SETTLE_MS));
 
