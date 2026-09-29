@@ -1,0 +1,11 @@
+{
+  "id": "sample-01",
+  "title": "Sample Plasma",
+  "author": "hiro",
+  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
+  "tags": ["sample", "plasma"],
+  "created": "2026-09-29",
+  "buffers": {
+    "image": "image.glsl"
+  }
+}
