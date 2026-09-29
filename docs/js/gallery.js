@@ -39,7 +39,7 @@ async function main() {
   const shaders = await loadList();
 
   if (!shaders.length) {
-    grid.innerHTML = '<p class="empty">まだシェーダーが登録されていません。site/shaders/ に追加してください。</p>';
+    grid.innerHTML = '<p class="empty">まだシェーダーが登録されていません。docs/shaders/ に追加してください。</p>';
     return;
   }
 
