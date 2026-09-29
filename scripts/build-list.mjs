@@ -1,11 +1,11 @@
-// site/shaders/<id>/shader.json を走査して site/shaders/list.json を生成する。
-// site/shaders/list.json は .gitignore 対象 (GitHub Actions が生成する)。
+// docs/shaders/<id>/shader.json を走査して docs/shaders/list.json を生成する。
+// docs/shaders/list.json は .gitignore 対象 (GitHub Actions が生成する)。
 import { readdir, readFile, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const shadersDir = path.join(__dirname, "..", "site", "shaders");
+const shadersDir = path.join(__dirname, "..", "docs", "shaders");
 const listPath = path.join(shadersDir, "list.json");
 
 async function isDirectory(p) {
