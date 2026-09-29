@@ -1,9 +1,9 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "id": "2210990081",
+  "title": "03_wednesday",
+  "author": "2210990081",
+  "description": "水曜日担当なので水をモチーフにしたアニメーションにしました。",
+  "tags": ["water"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"
