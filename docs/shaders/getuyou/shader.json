@@ -6,6 +6,6 @@
   "tags": ["getuyou", "night", "moon"],
   "created": "2026-09-29",
   "buffers": {
-    "image": "getuyou.glsl"
+    "image": "image.glsl"
   }
 }
