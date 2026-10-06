@@ -1,3 +1,12 @@
+/* カスタムフォントを使う場合は docs/assets/fonts/ にファイルを置き、
+   下の src とファイル名を実際のフォントファイルに書き換える
+   (body の font-family は既に "MyFont" を優先するようになっている)。 */
+@font-face {
+  font-family: "MyFont";
+  src: url("../assets/fonts/your-font.woff2") format("woff2");
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --bg: #0b0b0f;
@@ -15,7 +24,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--fg);
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: "MyFont", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 header {
@@ -124,4 +133,14 @@ header p {
   border-radius: 6px;
   font-size: 0.85rem;
   max-width: 60%;
+}
+
+.viewer .info .info-heading {
+  font-weight: 600;
+}
+
+.viewer .info .info-description {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.8rem;
 }

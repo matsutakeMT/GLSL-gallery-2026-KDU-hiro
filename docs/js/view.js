@@ -5,6 +5,22 @@ function getShaderId() {
   return params.get("id");
 }
 
+function setInfo(info, { title, author, description }) {
+  info.innerHTML = "";
+
+  const heading = document.createElement("div");
+  heading.className = "info-heading";
+  heading.textContent = author ? `${title} — ${author}` : title;
+  info.appendChild(heading);
+
+  if (description) {
+    const desc = document.createElement("div");
+    desc.className = "info-description";
+    desc.textContent = description;
+    info.appendChild(desc);
+  }
+}
+
 async function main() {
   const id = getShaderId();
   const info = document.getElementById("info");
@@ -30,7 +46,7 @@ async function main() {
   }
   const source = await glslRes.text();
 
-  info.textContent = `${meta.title || id} — ${meta.author || ""}`;
+  setInfo(info, { title: meta.title || id, author: meta.author, description: meta.description });
 
   const renderer = createRenderer(canvas, source, { pixelRatio: window.devicePixelRatio || 1 });
   renderer.start();
