@@ -2,8 +2,8 @@
   "id": "01getuyou",
   "title": "静かな月",
   "author": "nanasi",
-  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
-  "tags": ["sample", "plasma"],
+  "description": "月曜日の「月」からイメージして、静かで幻想的な夜空を表現した作品を作りました。大きな月を中心に、星や天の川、雲を配置し、星が瞬いたり流れ星が流れたりするようにしています。また、青や紫を中心とした色にすることで、落ち着いた静かな雰囲気を表現しました。",
+  "tags": [ "sample", "plasma" ],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"
