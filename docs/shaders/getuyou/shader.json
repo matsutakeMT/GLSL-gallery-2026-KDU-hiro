@@ -1,7 +1,7 @@
 {
-  "id": "sample-01",
-  "title": "Sample Plasma",
-  "author": "hiro",
+  "id": "01getuyou",
+  "title": "静かな月",
+  "author": "nanasi",
   "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
   "tags": ["sample", "plasma"],
   "created": "2026-09-29",
