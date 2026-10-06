@@ -1,9 +1,9 @@
 {
-  "id": "kinnyou",
+  "id": "mokuyou",
   "title": "04木曜:森の朝",
   "author": "",
   "description": "巨木と針葉樹が茂る森のシェーダー作品。",
-  "tags": ["kinnyou", "forest"],
+  "tags": ["mokuyou", "forest"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"
