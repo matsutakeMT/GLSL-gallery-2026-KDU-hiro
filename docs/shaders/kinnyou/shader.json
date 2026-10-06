@@ -1,9 +1,9 @@
 {
   "id": "kinnyou",
-  "title": "木曜:森の朝",
+  "title": "05金曜:TGIF! Warm Golden Rain",
   "author": "",
-  "description": "巨木と針葉樹が茂る森のシェーダー作品。",
-  "tags": ["kinnyou", "forest"],
+  "description": "金貨や指輪が降り注ぐ、暖色の光に満ちたシェーダー作品。",
+  "tags": ["kinnyou", "gold"],
   "created": "2026-09-29",
   "buffers": {
     "image": "image.glsl"
