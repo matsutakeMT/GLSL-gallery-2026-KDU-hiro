@@ -1,4 +1,4 @@
-// Minimal Shadertoy-compatible fullscreen-quad GLSL renderer.
+// Minimal Shadertoy-compatible fullscreen-quad GLSL (ES 3.00 / WebGL2) renderer.
 // Shader source files only need to define mainImage(out vec4 fragColor, in vec2 fragCoord) —
 // precision, uniforms, and main() are supplied automatically, exactly like on shadertoy.com.
 //
@@ -8,14 +8,16 @@
 //   renderer.start();
 //   renderer.stop();
 
-const VERTEX_SHADER = `
-attribute vec2 a_position;
+const VERTEX_SHADER = `#version 300 es
+in vec2 a_position;
 void main() {
   gl_Position = vec4(a_position, 0.0, 1.0);
 }
 `;
 
-const HEADER = `
+// #version must be the first line of the source, so HEADER (not a separate
+// constant) carries it; FOOTER declares the ES 3.00 fragment output below.
+const HEADER = `#version 300 es
 precision highp float;
 uniform vec3 iResolution;
 uniform float iTime;
@@ -32,10 +34,11 @@ uniform vec3 iChannelResolution[4];
 `;
 
 const FOOTER = `
+out vec4 o_fragColor;
 void main() {
   vec4 color;
   mainImage(color, gl_FragCoord.xy);
-  gl_FragColor = color;
+  o_fragColor = color;
 }
 `;
 
@@ -81,8 +84,8 @@ function createPlaceholderTexture(gl) {
 }
 
 export function createRenderer(canvas, fragmentSource, options = {}) {
-  const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-  if (!gl) throw new Error("WebGL is not supported in this browser.");
+  const gl = canvas.getContext("webgl2");
+  if (!gl) throw new Error("WebGL2 is not supported in this browser.");
 
   const source = HEADER + fragmentSource + FOOTER;
   const program = createProgram(gl, VERTEX_SHADER, source);
