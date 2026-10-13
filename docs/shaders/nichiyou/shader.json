@@ -1,0 +1,11 @@
+{
+  "id": "nichiyou",
+  "title": "月曜日の使者",
+  "author": "2410990100",
+  "description": "GLSL-gallery の動作確認用サンプルシェーダー。",
+  "tags": ["sample", "plasma"],
+  "created": "2026-09-29",
+  "buffers": {
+    "image": "image.glsl"
+  }
+}
