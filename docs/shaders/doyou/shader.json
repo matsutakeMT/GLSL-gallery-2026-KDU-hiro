@@ -1,0 +1,11 @@
+{
+  "id": "06doyou",
+  "title": "土曜日の解放感とお花畑",
+  "author": "2410990100",
+  "description": "頭の中はお花畑で、休日が始まって力が抑えきれずあふれ出ているイメージをしたシェーダー作品",
+  "tags": ["sample", "plasma"],
+  "created": "2026-010-13",
+  "buffers": {
+    "image": "image.glsl"
+  }
+}
