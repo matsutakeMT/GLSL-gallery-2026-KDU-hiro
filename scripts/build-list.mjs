@@ -28,8 +28,14 @@ async function main() {
     try {
       const raw = await readFile(shaderJsonPath, "utf-8");
       const meta = JSON.parse(raw);
+      // id must match the folder name: view.html fetches shaders/<id>/... by
+      // this value, so a copy-pasted/mismatched id would silently route to
+      // (or collide with) a different shader.
+      if (meta.id && meta.id !== entry) {
+        console.warn(`"${entry}": shader.json id "${meta.id}" does not match folder name, using "${entry}" instead`);
+      }
       shaders.push({
-        id: meta.id || entry,
+        id: entry,
         title: meta.title || entry,
         author: meta.author || "",
         description: meta.description || "",
