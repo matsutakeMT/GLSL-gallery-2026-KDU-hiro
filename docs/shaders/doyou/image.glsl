@@ -62,7 +62,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         fUv *= 1.0 - sin(t * 2.0 - length(uv) * 3.0) * 0.15;
         
         float petals = 5.0 + float(i * 3); // 5枚、8枚、11枚の花弁
-        float f = flowerPattern(fUv, petals, t * ( i % 2.0 == 0.0 ? 1.0 : -1.0));
+        float f = flowerPattern(fUv, petals, t * ( float(i) % 2.0 == 0.0 ? 1.0 : -1.0));
         
         // 各層の花の色
         vec3 c = vec3(
