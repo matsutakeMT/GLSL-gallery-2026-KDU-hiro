@@ -1,11 +1,11 @@
 {
-  "id": "kayou-01",
+  "id": "kayou",
   "title": "火の鳥",
   "author": "2410990077",
   "description": "燃える鳥をイメージしたシェーダー作品",
-  "tags": ["kayou", "plasma"],
+  "tags": ["sample", "plasma"],
   "created": "2026-09-29",
   "buffers": {
-    "image": "kayouimage.glsl"
+    "image": "image.glsl"
   }
 }
