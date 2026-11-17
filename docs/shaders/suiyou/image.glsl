@@ -1,8 +1,15 @@
-// ランダム関数
+// 1次元ハッシュ関数
 float hash12(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
     return fract(p.x * p.y);
+}
+
+// 2次元ハッシュ関数（ランダムなXYオフセット生成用）
+vec2 hash22(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.xx + p3.yz) * p3.zy);
 }
 
 // 雨筋（レーンドロップ）の描画関数
@@ -27,22 +34,48 @@ float rainLayer(vec2 uv, float t, float speed, vec2 scale) {
     return (drop + trail * 0.5) * n;
 }
 
-// 地面の水たまりの波紋（リップル）
+// ランダムな位置と大きさで重なり合う波紋（リップル）
 float ripple(vec2 uv, float t) {
-    vec2 id = floor(uv * 6.0);
-    vec2 gv = fract(uv * 6.0) - 0.5;
+    vec2 st = uv * 4.5;
+    vec2 id = floor(st);
+    vec2 gv = fract(st);
     
-    float n = hash12(id);
-    float dropTime = fract(t * 1.5 + n); // 波紋の発生タイミング
+    float totalRing = 0.0;
     
-    float dist = length(gv);
-    float circle = sin(dist * 30.0 - dropTime * 15.0);
+    // 隣接する3x3セルを探索することで、セル境界を越えて波紋が広がり重なり合うようにする
+    for (int y = -1; y <= 1; y++) {
+        for (int x = -1; x <= 1; x++) {
+            vec2 offset = vec2(float(x), float(y));
+            vec2 cellId = id + offset;
+            
+            // セルごとのランダム値を取得
+            vec2 randPos = hash22(cellId);          // 発生位置のランダム化 (0.0 ~ 1.0)
+            float randVal = hash12(cellId + 17.3);  // タイミングとサイズのランダム化
+            
+            // 波紋のライフサイクル（周期も少しランダムにずらす）
+            float speed = 0.8 + randVal * 0.6;
+            float dropTime = fract(t * speed + randVal * 10.0);
+            
+            // セル内のランダムな位置を波紋の中心に設定
+            vec2 center = offset + randPos;
+            float dist = length(gv - center);
+            
+            // 大きさのランダム化（最大半径を 0.25 〜 0.85 の間でランダムに決定）
+            float maxRadius = 0.25 + fract(randVal * 7.13) * 0.6;
+            float currentRadius = dropTime * maxRadius;
+            
+            // 波紋のリング形状（外側と内側の輪郭 + 多重リングの揺らぎ）
+            float wave = sin((dist - currentRadius) * 45.0);
+            float mask = smoothstep(0.08, 0.0, abs(dist - currentRadius));
+            
+            // 発生直後から消えるまでのフェードイン・フェードアウト
+            float fade = smoothstep(0.0, 0.1, dropTime) * smoothstep(1.0, 0.2, dropTime);
+            
+            totalRing += max(0.0, wave) * mask * fade;
+        }
+    }
     
-    // 時間経過で波紋が広がり消えるフェード処理
-    float fade = smoothstep(1.0, 0.0, dropTime);
-    float ring = smoothstep(0.05, 0.0, abs(dist - dropTime * 0.5)) * circle * fade;
-    
-    return max(0.0, ring);
+    return totalRing;
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -106,7 +139,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if (uv.y < -0.2) {
         vec2 groundUV = vec2(uv.x * 1.5, (uv.y + 0.2) * 3.0); // 奥行き感を出すための遠近補正
         float rip = ripple(groundUV, iTime) * rainIntensity;
-        col += vec3(0.4, 0.6, 0.8) * rip * smoothstep(-0.2, -0.6, uv.y);
+        col += vec3(0.45, 0.65, 0.85) * rip * smoothstep(-0.2, -0.55, uv.y);
     }
 
     // --------------------------------------------------------
