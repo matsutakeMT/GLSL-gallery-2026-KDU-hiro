@@ -103,6 +103,11 @@ header p {
 .viewer {
   position: fixed;
   inset: 0;
+  /* dvh tracks the browser's actual visible area as mobile address/tool
+     bars show or hide; without it, fixed+inset can size against the
+     "address bar hidden" height and leave the bottom cut off. */
+  height: 100vh;
+  height: 100dvh;
   background: #000;
 }
 
@@ -114,8 +119,10 @@ header p {
 
 .viewer .back {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  /* env(safe-area-inset-*) keeps this clear of notches/rounded corners on
+     phones (0 on devices without one, so this is a no-op elsewhere). */
+  top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left));
   color: var(--fg);
   background: rgba(0, 0, 0, 0.5);
   padding: 6px 12px;
@@ -126,14 +133,14 @@ header p {
 
 .viewer .info {
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(12px, env(safe-area-inset-left));
   color: var(--fg);
   background: rgba(0, 0, 0, 0.5);
   padding: 8px 12px;
   border-radius: 6px;
   font-size: 0.85rem;
-  max-width: 60%;
+  max-width: min(60%, calc(100% - 24px));
 }
 
 .viewer .info .info-heading {
