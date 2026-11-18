@@ -1,8 +1,7 @@
 import { createRenderer } from "./engine/engine.js";
 
-function getShaderId() {
-  const params = new URLSearchParams(location.search);
-  return params.get("id");
+function getParams() {
+  return new URLSearchParams(location.search);
 }
 
 function setInfo(info, { title, author, description }) {
@@ -22,9 +21,16 @@ function setInfo(info, { title, author, description }) {
 }
 
 async function main() {
-  const id = getShaderId();
+  const params = getParams();
+  const id = params.get("id");
+  // ?capture=1 is used by scripts/build-movies.mjs to drive the renderer
+  // frame-by-frame (via window.__renderer.renderOnce) instead of free-running
+  // rAF playback, and to hide the back link / caption from the recording.
+  const capture = params.has("capture");
   const info = document.getElementById("info");
   const canvas = document.getElementById("canvas");
+
+  if (capture) document.body.classList.add("capture-mode");
 
   if (!id) {
     info.textContent = "シェーダーIDが指定されていません。";
@@ -48,8 +54,10 @@ async function main() {
 
   setInfo(info, { title: meta.title || id, author: meta.author, description: meta.description });
 
-  const renderer = createRenderer(canvas, source, { pixelRatio: window.devicePixelRatio || 1 });
-  renderer.start();
+  const renderer = createRenderer(canvas, source, { pixelRatio: capture ? 1 : window.devicePixelRatio || 1 });
+  window.__renderer = renderer;
+
+  if (!capture) renderer.start();
 }
 
 main();
