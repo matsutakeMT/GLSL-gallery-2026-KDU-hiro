@@ -16,13 +16,15 @@ docs/                       # ← ここだけが公開される
 │   └── <id>/
 │       ├── shader.json
 │       └── image.glsl ...
-└── assets/
-    ├── textures/
-    └── thumbs/               # ※Actions が生成(コミットしない)
+├── assets/
+│   ├── textures/
+│   └── thumbs/               # ※Actions が生成(コミットしない)
+└── movie/                    # 各シェーダーの 1920x1080 / 15秒 MP4 (手動生成・コミットする)
 
 scripts/
 ├── build-list.mjs           # docs/shaders を走査して list.json を生成
-└── build-thumbs.mjs         # puppeteer でサムネイル画像を生成
+├── build-thumbs.mjs         # puppeteer でサムネイル画像を生成
+└── build-movies.mjs         # puppeteer + ffmpeg で docs/movie/<id>.mp4 を生成
 
 .github/workflows/deploy.yml # push時に list.json / thumbs をビルドして GitHub Pages に公開
 ```
@@ -69,6 +71,24 @@ npm run build:thumbs   # docs/assets/thumbs/*.png を生成 (puppeteer が必要
 ```
 
 その後 `docs/` を任意の静的サーバーで配信して確認する(例: `npx serve docs`)。
+
+## 動画書き出し(docs/movie/)
+
+各シェーダーを 1920x1080 / 15秒 の MP4 に変換して `docs/movie/<id>.mp4` に書き出す。list.json/thumbs と違い、生成に時間がかかる(ソフトウェアレンダリングで 1 本あたり数分)ことと `ffmpeg` が別途必要なことから、CI では自動実行せず手動で生成してコミットする運用にしている。
+
+```bash
+npm install
+npm run build:list     # 先に docs/shaders/list.json を最新化しておく
+npm run build:movies   # 要 ffmpeg (winget install Gyan.FFmpeg / choco install ffmpeg など)
+```
+
+秒数・fps は環境変数で変更可能(既定: 15秒・30fps):
+
+```bash
+MOVIE_DURATION=10 MOVIE_FPS=24 npm run build:movies
+```
+
+仕組み: `view.html?id=<id>&capture=1` で開くと UI(戻るリンク・キャプション)を隠し、`window.__renderer.renderOnce(t)` を外部から固定タイムステップで直接呼び出せるようにしている。実時間のrequestAnimationFrame任せではなくこの方式で1フレームずつ撮影するため、マシンの描画速度に関わらず常に同じ滑らかさの動画になる。
 
 ## デプロイ
 

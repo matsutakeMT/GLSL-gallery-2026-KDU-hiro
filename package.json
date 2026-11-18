@@ -5,6 +5,7 @@
   "scripts": {
     "build:list": "node scripts/build-list.mjs",
     "build:thumbs": "node scripts/build-thumbs.mjs",
+    "build:movies": "node scripts/build-movies.mjs",
     "build": "npm run build:list && npm run build:thumbs"
   },
   "devDependencies": {
